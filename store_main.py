@@ -45,12 +45,12 @@ flask_app = Flask(__name__)
 flask_app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')
 
 # Bot connection
-webhook_url = os.getenv('NGROK_HTTPS_URL')
+webhook_url = os.getenv('WEBHOOK_URL')
 bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
 store_currency = os.getenv('STORE_CURRENCY', 'USD')
 
 if not webhook_url or not bot_token:
-    logger.error("Missing required environment variables: NGROK_HTTPS_URL or TELEGRAM_BOT_TOKEN")
+    logger.error("Missing required environment variables: WEBHOOK_URL or TELEGRAM_BOT_TOKEN")
     exit(1)
 
 bot = telebot.TeleBot(bot_token, threaded=False)
