@@ -14,7 +14,7 @@ class BotConfig:
     
     # Bot Settings
     BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-    WEBHOOK_URL = os.getenv('NGROK_HTTPS_URL')
+    WEBHOOK_URL = os.getenv('WEBHOOK_URL')
     
     # Store Settings
     STORE_CURRENCY = os.getenv('STORE_CURRENCY', 'USD')
