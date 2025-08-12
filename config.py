@@ -14,7 +14,7 @@ class BotConfig:
     
     # Bot Settings
     BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-    WEBHOOK_URL = os.getenv('WEBHOOK_URL')
+    WEBHOOK_URL = os.getenv('RENDER_URL')
     
     # Store Settings
     STORE_CURRENCY = os.getenv('STORE_CURRENCY', 'USD')
@@ -75,7 +75,7 @@ class BotConfig:
             errors.append("TELEGRAM_BOT_TOKEN is not set")
         
         if not cls.WEBHOOK_URL:
-            errors.append("NGROK_HTTPS_URL is not set")
+            errors.append("RENDER_URL is not set")
         
         if errors:
             raise ValueError(f"Configuration errors: {', '.join(errors)}")
