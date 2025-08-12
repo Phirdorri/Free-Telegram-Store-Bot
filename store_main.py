@@ -44,13 +44,19 @@ logger = logging.getLogger(__name__)
 flask_app = Flask(__name__)
 flask_app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')
 
-# Bot connection
-webhook_url = os.getenv('WEBHOOK_URL') + "/webhook"
-bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
-store_currency = os.getenv('STORE_CURRENCY', 'USD')
+# Получаем базовый URL из переменных окружения
+RENDER_URL = os.getenv('RENDER_URL')  # https://your-app.onrender.com
+if not RENDER_URL:
+    logger.error("Missing required environment variable: RENDER_URL")
+    exit(1)
 
-if not webhook_url or not bot_token:
-    logger.error("Missing required environment variables: WEBHOOK_URL or TELEGRAM_BOT_TOKEN")
+# Формируем полный URL вебхука
+WEBHOOK_PATH = "/webhook"
+WEBHOOK_URL = RENDER_URL + WEBHOOK_PATH
+
+bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
+if not bot_token:
+    logger.error("Missing required environment variable: TELEGRAM_BOT_TOKEN")
     exit(1)
 
 bot = telebot.TeleBot(bot_token, threaded=False)
@@ -58,31 +64,29 @@ bot = telebot.TeleBot(bot_token, threaded=False)
 # Set up webhook
 try:
     bot.remove_webhook()
-    bot.set_webhook(url=webhook_url)
-    logger.info(f"Webhook set successfully to {webhook_url}")
+    time.sleep(1)  # Небольшая задержка для надежности
+    bot.set_webhook(url=WEBHOOK_URL)
+    logger.info(f"Webhook set successfully to {WEBHOOK_URL}")
 except Exception as e:
     logger.error(f"Failed to set webhook: {e}")
     exit(1)
 
-
-# Process webhook calls
-logger.info("Shop Started!")
-
-@flask_app.route('/webhook', methods=['GET', 'POST'])
-def webhook():
+# Основной обработчик вебхука
+@flask_app.route(WEBHOOK_PATH, methods=['POST'])
+def handle_webhook():
     """Handle incoming webhook requests from Telegram"""
     try:
         if flask.request.headers.get('content-type') == 'application/json':
             json_string = flask.request.get_data().decode('utf-8')
             update = telebot.types.Update.de_json(json_string)
             bot.process_new_updates([update])
-            return ''
+            return '', 200
         else:
             logger.warning("Invalid content type in webhook request")
-            flask.abort(403)
+            return 'Invalid content type', 403
     except Exception as e:
         logger.error(f"Error processing webhook: {e}")
-        flask.abort(500)
+        return 'Internal server error', 500
 
 # Initialize payment settings
 def get_payment_api_key():
