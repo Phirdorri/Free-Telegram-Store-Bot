@@ -1,4 +1,5 @@
 import flask
+from datetime import datetime
 import requests
 import time
 import logging
@@ -62,8 +63,9 @@ bot = telebot.TeleBot(bot_token, threaded=False)
 
 # Set up webhook
 try:
+    logger.info("Removing previous webhook...")
     bot.remove_webhook()
-    time.sleep(1)  # Небольшая задержка для надежности
+    logger.info(f"Setting new webhook to: {WEBHOOK_URL}")
     bot.set_webhook(url=WEBHOOK_URL)
     logger.info(f"Webhook set successfully to {WEBHOOK_URL}")
 except Exception as e:
