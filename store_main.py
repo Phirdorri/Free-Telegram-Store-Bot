@@ -45,7 +45,7 @@ flask_app = Flask(__name__)
 flask_app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')
 
 # Bot connection
-webhook_url = os.getenv('WEBHOOK_URL')
+webhook_url = os.getenv('WEBHOOK_URL') + "/webhook"
 bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
 store_currency = os.getenv('STORE_CURRENCY', 'USD')
 
@@ -1446,10 +1446,15 @@ def add_bitcoin_secret_key(message):
     else:
         bot.send_message(id, "⚠️ Only Admin can use this command !!!", reply_markup=keyboard)
 
+@flask_app.route('/healthcheck')
+def healthcheck():
+    return "OK", 200
+
 if __name__ == '__main__':
     try:
         logger.info("Starting Flask application...")
-        flask_app.run(debug=False, host='0.0.0.0', port=5000)
+        port = int(os.environ.get('PORT', 10000))
+        flask_app.run(debug=False, host='0.0.0.0', port=port)
     except Exception as e:
         logger.error(f"Error starting Flask application: {e}")
         exit(1)
