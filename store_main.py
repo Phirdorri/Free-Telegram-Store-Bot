@@ -68,7 +68,7 @@ except Exception as e:
 # Process webhook calls
 logger.info("Shop Started!")
 
-@flask_app.route('/', methods=['GET', 'POST'])
+@flask_app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
     """Handle incoming webhook requests from Telegram"""
     try:
