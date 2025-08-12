@@ -1,5 +1,4 @@
 import flask
-from datetime import datetime
 import requests
 import time
 import logging
