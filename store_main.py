@@ -53,7 +53,7 @@ if not RENDER_URL:
 # Формируем полный URL вебхука
 WEBHOOK_PATH = "/webhook"
 WEBHOOK_URL = RENDER_URL + WEBHOOK_PATH
-
+store_currency = os.getenv('STORE_CURRENCY', 'USD')
 bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
 if not bot_token:
     logger.error("Missing required environment variable: TELEGRAM_BOT_TOKEN")
