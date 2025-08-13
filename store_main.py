@@ -77,16 +77,29 @@ except Exception as e:
 def handle_webhook():
     """Handle incoming webhook requests from Telegram"""
     try:
-        if flask.request.headers.get('content-type') == 'application/json':
-            json_string = flask.request.get_data().decode('utf-8')
+        logger.info("Webhook request received")
+        
+        # Детальное логгирование заголовков
+        headers = {k: v for k, v in request.headers.items()}
+        logger.info(f"Request headers: {headers}")
+        
+        if request.headers.get('content-type') == 'application/json':
+            json_string = request.get_data().decode('utf-8')
+            
+            # Логируем первые 200 символов JSON для диагностики
+            logger.info(f"Received JSON (truncated): {json_string[:200]}")
+            
             update = telebot.types.Update.de_json(json_string)
+            logger.info(f"Processing update ID: {update.update_id}")
+            
+            # Обработка обновления
             bot.process_new_updates([update])
             return '', 200
         else:
-            logger.warning("Invalid content type in webhook request")
+            logger.warning(f"Invalid content type: {request.headers.get('content-type')}")
             return 'Invalid content type', 403
     except Exception as e:
-        logger.error(f"Error processing webhook: {e}")
+        logger.exception("Critical error in webhook handler:")  # Логирует полный traceback
         return 'Internal server error', 500
 
 # Initialize payment settings
