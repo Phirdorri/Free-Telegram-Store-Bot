@@ -90,11 +90,22 @@ def handle_webhook():
             logger.info(f"Received JSON (truncated): {json_string[:200]}")
             
             update = telebot.types.Update.de_json(json_string)
+            
+            # Добавлена проверка на None
+            if update is None:
+                logger.error("Received None update, skipping processing")
+                return '', 200
+                
             logger.info(f"Processing update ID: {update.update_id}")
             
-            # Обработка обновления
-            bot.process_new_updates([update])
-            return '', 200
+            # Добавлена обработка исключений при обработке обновления
+            try:
+                # Обработка обновления
+                bot.process_new_updates([update])
+                return '', 200
+            except Exception as inner_e:
+                logger.error(f"Error processing update: {inner_e}")
+                return 'Internal server error', 500
         else:
             logger.warning(f"Invalid content type: {request.headers.get('content-type')}")
             return 'Invalid content type', 403
@@ -1469,6 +1480,12 @@ def healthcheck():
     return "OK", 200
 
 if __name__ == '__main__':
+    # Добавлен обработчик необработанных исключений
+    import sys
+    def handle_exception(exc_type, exc_value, exc_traceback):
+        logger.error("Unhandled exception", exc_info=(exc_type, exc_value, exc_traceback))
+    sys.excepthook = handle_exception
+    
     try:
         logger.info("Starting Flask application...")
         port = int(os.environ.get('PORT', 10000))
