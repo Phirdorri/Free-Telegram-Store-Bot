@@ -185,35 +185,39 @@ def products_get(message):
 @bot.message_handler(content_types=["text"], func=lambda message: message.text == "Home 🏘")
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
+    logger.info(f"Handling /start command from user {message.from_user.id}")
     try:
-        print(NOWPAYMENTS_API_KEY)
-        1==1
         try:
             id = message.from_user.id
             usname = message.chat.username
-            admins = GetDataFromDB.GetAdminIDsInDB()
-            user_s = GetDataFromDB.AllUsers()
-            for a_user_s in user_s:
-                all_user_s = a_user_s[0]
-            admin_s = GetDataFromDB.AllAdmins()
-            for a_admin_s in admin_s:
-                all_admin_s = a_admin_s[0]
-            product_s = GetDataFromDB.AllProducts()
-            for a_product_s in product_s:
-                all_product_s = a_product_s[0]
-            orders_s = GetDataFromDB.AllOrders()
-            for a_orders_s in orders_s:
-                all_orders_s = a_orders_s[0]
+            admins = GetDataFromDB.GetAdminIDsInDB() or []
+            
+            # Безопасное получение статистики
+            user_s = GetDataFromDB.AllUsers() or []
+            all_user_s = len(user_s)
+            
+            admin_s = GetDataFromDB.AllAdmins() or []
+            all_admin_s = len(admin_s)
+            
+            product_s = GetDataFromDB.AllProducts() or []
+            all_product_s = len(product_s)
+            
+            orders_s = GetDataFromDB.AllOrders() or []
+            all_orders_s = len(orders_s)
             
             keyboardadmin = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
             keyboardadmin.row_width = 2
             
-            if admins == []:
-                users = GetDataFromDB.GetUserIDsInDB()
-                if f"{id}" not in f"{users}":
-                    CreateDatas.AddAuser(id,usname)
+            # Проверка, является ли пользователь первым администратором
+            if not admins:
+                users = GetDataFromDB.GetUserIDsInDB() or []
+                if id not in users:
+                    CreateDatas.AddAuser(id, usname)
+                
                 user_type = "Shop Admin"
-                CreateDatas.AddAdmin(id,usname)
+                CreateDatas.AddAdmin(id, usname)
+                
+                # Создание клавиатуры администратора
                 key0 = types.KeyboardButton(text="Manage Products 💼")
                 key1 = types.KeyboardButton(text="Manage Categories 💼")
                 key2 = types.KeyboardButton(text="Manage Orders 🛍")
@@ -224,16 +228,22 @@ def send_welcome(message):
                 keyboardadmin.add(key1, key2)
                 keyboardadmin.add(key3, key4)
                 keyboardadmin.add(key5)
+                
                 store_statistics = f"➖➖➖Store's Statistics 📊➖➖➖\n\n\nTotal Users 🙍‍♂️: {all_user_s}\n\nTotal Admins 🤴: {all_admin_s}\n\nTotal Products 🏷: {all_product_s}\n\nTotal Orders 🛍: {all_orders_s}\n\n\n➖➖➖➖➖➖➖➖➖➖➖➖➖"
-                user_data = "0"
-                bot.send_photo(chat_id=message.chat.id, photo="https://i.ibb.co/9vctwpJ/IMG-1235.jpg", caption=f"Dear {user_type},\n\nYour Wallet Balance: $ {user_data} 💰 \n\n{store_statistics}", reply_markup=keyboardadmin)
-            elif f"{id}" in f"{admins}":
-                keyboardadmin = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
-                keyboardadmin.row_width = 2
-                users = GetDataFromDB.GetUserIDsInDB()
-                if f"{id}" not in f"{users}":
-                    CreateDatas.AddAuser(id,usname)
+                bot.send_photo(chat_id=message.chat.id, photo="https://i.ibb.co/9vctwpJ/IMG-1235.jpg", 
+                              caption=f"Dear {user_type},\n\nWelcome! 🤝\n\n{store_statistics}", 
+                              reply_markup=keyboardadmin)
+            
+            # Проверка, является ли пользователь администратором
+            elif str(id) in [str(admin) for admin in admins]:
+                users = GetDataFromDB.GetUserIDsInDB() or []
+                if id not in users:
+                    CreateDatas.AddAuser(id, usname)
+                
                 user_type = "Shop Admin"
+                CreateDatas.AddAdmin(id, usname)
+                
+                # Создание клавиатуры администратора
                 key0 = types.KeyboardButton(text="Manage Products 💼")
                 key1 = types.KeyboardButton(text="Manage Categories 💼")
                 key2 = types.KeyboardButton(text="Manage Orders 🛍")
@@ -244,26 +254,41 @@ def send_welcome(message):
                 keyboardadmin.add(key1, key2)
                 keyboardadmin.add(key3, key4)
                 keyboardadmin.add(key5)
-
+                
                 store_statistics = f"➖➖➖Store's Statistics 📊➖➖➖\n\n\nTotal Users 🙍‍♂️: {all_user_s}\n\nTotal Admins 🤴: {all_admin_s}\n\nTotal Products 🏷: {all_product_s}\n\nTotal Orders 🛍: {all_orders_s}\n\n\n➖➖➖➖➖➖➖➖➖➖➖➖➖"
-                user_data = "0"
-                bot.send_photo(chat_id=message.chat.id, photo="https://i.ibb.co/9vctwpJ/IMG-1235.jpg", caption=f"Dear {user_type},\n\nWelcome! 🤝\n\n{store_statistics}", reply_markup=keyboardadmin)
-
+                bot.send_photo(chat_id=message.chat.id, photo="https://i.ibb.co/9vctwpJ/IMG-1235.jpg", 
+                              caption=f"Dear {user_type},\n\nWelcome! 🤝\n\n{store_statistics}", 
+                              reply_markup=keyboardadmin)
+            
+            # Проверка, является ли пользователь администратором
+            elif str(id) in [str(admin) for admin in admins]:
+                users = GetDataFromDB.GetUserIDsInDB() or []
+                if id not in users:
+                    CreateDatas.AddAuser(id, usname)
+                
+            # Обычный пользователь
             else:
-                users = GetDataFromDB.GetUserIDsInDB()
-                if f"{id}" in f"{users}":
+                users = GetDataFromDB.GetUserIDsInDB() or []
+                if id in users:
                     user_type = "Customer"
-                    user_data = GetDataFromDB.GetUserWalletInDB(id)
+                    user_data = GetDataFromDB.GetUserWalletInDB(id) or 0
                 else:
-                    CreateDatas.AddAuser(id,usname)
+                    CreateDatas.AddAuser(id, usname)
                     user_type = "Customer"
-                    user_data = GetDataFromDB.GetUserWalletInDB(id)
-                bot.send_photo(chat_id=message.chat.id, photo="https://i.ibb.co/9vctwpJ/IMG-1235.jpg", caption=f"Dear {user_type},\n\nWelcome! 🤝\n\nBrowse our products, make purchases, and enjoy fast delivery! \nType /browse to start shopping. \n\n💬 Need help? \nContact our support team anytime.", reply_markup=keyboard)
+                    user_data = 0
+                
+                bot.send_photo(chat_id=message.chat.id, photo="https://i.ibb.co/9vctwpJ/IMG-1235.jpg", 
+                              caption=f"Dear {user_type},\n\nWelcome! 🤝\n\nBrowse our products, make purchases, and enjoy fast delivery! \nType /browse to start shopping. \n\n💬 Need help? \nContact our support team anytime.", 
+                              reply_markup=keyboard)
         except Exception as e:
-            print(e)
-            admin_switch_user(message)
+            logger.exception("Error in admin/user detection")
+            # Попытка переключиться в режим пользователя при ошибке
+            try:
+                admin_switch_user(message)
+            except Exception as inner_e:
+                logger.exception("Critical error in admin_switch_user")
     except Exception as e:
-        print(e)
+        logger.exception("Critical error in send_welcome")
         
 #Switch admin to user handler
 @bot.message_handler(content_types=["text"], func=lambda message: message.text == "Switch To User 🙍‍♂️")
